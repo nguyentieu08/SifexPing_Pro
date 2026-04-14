@@ -3,144 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Pro - Fixed</title>
+    <title>AI Chat Pro - OpenRouter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #e2e8f0; }
-        .chat-container { height: calc(100vh - 160px); }
-        .message { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+        }
+
+        .chat-container {
+            height: calc(100vh - 180px);
+        }
+
+        .message-fade {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Tùy chỉnh thanh cuộn */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
     </style>
 </head>
-<body class="h-screen flex flex-col max-w-4xl mx-auto shadow-2xl border-x border-slate-800 bg-[#1e293b]">
+<body class="flex items-center justify-center h-screen p-0 m-0">
 
-    <!-- Header -->
-    <header class="p-4 bg-[#0f172a] border-b border-slate-700 flex justify-between items-center">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg">AI</div>
-            <h1 class="font-semibold text-sm">OpenRouter Chat Pro</h1>
-        </div>
-        <div id="api-status" class="text-[10px] bg-slate-800 px-3 py-1 rounded-full text-slate-400 uppercase tracking-tighter">Đang kiểm tra...</div>
-    </header>
-
-    <!-- Chat Display -->
-    <main id="chat-display" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 chat-container bg-[#1e293b]">
-        <div class="message flex justify-start">
-            <div class="max-w-[85%] bg-slate-800 p-4 rounded-2xl rounded-tl-none border border-slate-700 text-sm">
-                Xin chào! Tôi đã cập nhật mã nguồn để chạy ổn định hơn. Hãy thử nhắn tin để kiểm tra kết nối nhé.
+    <div class="w-full max-w-4xl h-full md:h-[90vh] bg-[#1e293b] md:rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-slate-700">
+        <!-- Header -->
+        <div class="p-4 bg-[#0f172a] border-b border-slate-700 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20">
+                    AI
+                </div>
+                <div>
+                    <h1 class="text-white font-semibold text-sm">OpenRouter Chat</h1>
+                    <p class="text-[10px] text-green-400 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                        Hệ thống sẵn sàng
+                    </p>
+                </div>
+            </div>
+            <div class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                Llama 3 Free
             </div>
         </div>
-    </main>
 
-    <!-- Input Area -->
-    <footer class="p-4 bg-[#0f172a] border-t border-slate-700">
-        <div class="flex gap-2 relative">
-            <textarea id="user-input" rows="1" placeholder="Hỏi bất cứ điều gì..." 
-                class="w-full bg-slate-800 border border-slate-700 rounded-xl py-3 pl-4 pr-12 outline-none focus:border-blue-500 text-sm resize-none"></textarea>
-            <button onclick="handleSend()" id="send-btn" class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-blue-600 hover:bg-blue-500 rounded-lg transition-all flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                </svg>
-            </button>
+        <!-- Chat Messages -->
+        <div id="chat-display" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 chat-container">
+            <!-- Tin nhắn chào mừng -->
+            <div class="flex justify-start message-fade">
+                <div class="max-w-[85%] bg-slate-800 text-slate-200 p-4 rounded-2xl rounded-tl-none shadow-sm border border-slate-700 text-sm leading-relaxed">
+                    Chào bạn! API của bạn đã được kết nối thành công. Tôi là trợ lý AI thông minh, tôi có thể giúp gì cho bạn hôm nay?
+                </div>
+            </div>
         </div>
-    </footer>
+
+        <!-- Loading Indicator (Ẩn) -->
+        <div id="typing-indicator" class="hidden px-6 py-2">
+            <div class="flex gap-1">
+                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></div>
+                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 bg-[#0f172a] border-t border-slate-700">
+            <div class="max-w-3xl mx-auto flex gap-2 relative">
+                <textarea id="user-input" 
+                    placeholder="Nhập tin nhắn..." 
+                    rows="1"
+                    class="w-full bg-slate-800 text-slate-200 rounded-xl py-3 pl-4 pr-12 border border-slate-700 focus:border-blue-500 outline-none resize-none text-sm transition-all"
+                ></textarea>
+                <button onclick="handleSend()" 
+                    class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center justify-center shadow-lg shadow-blue-900/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-[9px] text-center text-slate-500 mt-3 italic">
+                Sử dụng API của OpenRouter để phản hồi tin nhắn
+            </p>
+        </div>
+    </div>
 
     <script>
-        const API_KEY = "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";
-        const MODEL = "meta-llama/llama-3-8b-instruct:free";
-
-        // Cập nhật trạng thái khi load trang
-        window.onload = () => {
-            document.getElementById('api-status').innerText = "Sẵn sàng";
-            document.getElementById('api-status').classList.replace('text-slate-400', 'text-green-400');
-        };
+        // API KEY CỦA BẠN ĐÃ ĐƯỢC GẮN TẠI ĐÂY
+        const OPENROUTER_API_KEY = "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";
+        const MODEL_NAME = "meta-llama/llama-3-8b-instruct:free";
 
         async function handleSend() {
-            const input = document.getElementById('user-input');
-            const text = input.value.trim();
-            if (!text) return;
+            const inputElement = document.getElementById('user-input');
+            const message = inputElement.value.trim();
+            
+            if (!message) return;
 
-            appendMessage(text, 'user');
-            input.value = '';
-            input.style.height = 'auto';
+            // Hiển thị tin nhắn người dùng
+            appendMessage(message, 'user');
+            inputElement.value = '';
+            inputElement.style.height = 'auto';
 
-            const loadingId = appendMessage("Đang suy nghĩ...", 'ai', true);
+            // Hiển thị trạng thái đang nhập
+            const typingIndicator = document.getElementById('typing-indicator');
+            typingIndicator.classList.remove('hidden');
 
             try {
                 const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
                     method: "POST",
                     headers: {
-                        "Authorization": `Bearer ${API_KEY}`,
-                        "Content-Type": "application/json",
-                        "HTTP-Referer": "https://localhost", // Bắt buộc cho OpenRouter
-                        "X-Title": "Local AI Chat"
+                        "Authorization": `Bearer ${OPENROUTER_API_KEY}`,
+                        "HTTP-Referer": window.location.href, // Yêu cầu từ OpenRouter
+                        "X-Title": "My AI Web App",
+                        "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        model: MODEL,
-                        messages: [{ role: "user", content: text }]
+                        "model": MODEL_NAME,
+                        "messages": [
+                            {
+                                "role": "user",
+                                "content": message
+                            }
+                        ]
                     })
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error?.message || "Lỗi API không xác định");
+                const data = await response.json();
+                
+                if (data.choices && data.choices[0]) {
+                    const aiReply = data.choices[0].message.content;
+                    appendMessage(aiReply, 'ai');
+                } else {
+                    appendMessage("Xin lỗi, hệ thống AI đang bận hoặc có lỗi xảy ra.", 'ai', true);
                 }
 
-                const data = await response.json();
-                const aiMsg = data.choices[0].message.content;
-                updateMessage(loadingId, aiMsg);
-
             } catch (error) {
-                console.error("Fetch Error:", error);
-                updateMessage(loadingId, "❌ Lỗi: " + error.message, true);
+                console.error("Error:", error);
+                appendMessage("Lỗi kết nối: Không thể liên lạc được với máy chủ AI.", 'ai', true);
+            } finally {
+                typingIndicator.classList.add('hidden');
             }
         }
 
-        function appendMessage(text, sender, isPending = false) {
-            const id = 'msg-' + Date.now();
+        function appendMessage(content, sender, isError = false) {
             const chatDisplay = document.getElementById('chat-display');
             const wrapper = document.createElement('div');
-            wrapper.className = `message flex ${sender === 'user' ? 'justify-end' : 'justify-start'}`;
+            wrapper.className = `flex ${sender === 'user' ? 'justify-end' : 'justify-start'} message-fade`;
 
-            const bubble = document.createElement('div');
-            bubble.id = id;
-            bubble.className = sender === 'user' 
-                ? "max-w-[85%] bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none text-sm shadow-md"
-                : "max-w-[85%] bg-slate-800 p-3 rounded-2xl rounded-tl-none border border-slate-700 text-sm shadow-sm";
+            const messageDiv = document.createElement('div');
+            messageDiv.className = sender === 'user' 
+                ? "max-w-[85%] bg-blue-600 text-white p-4 rounded-2xl rounded-tr-none shadow-md text-sm leading-relaxed"
+                : `max-w-[85%] ${isError ? 'bg-red-900/30 text-red-200 border-red-800' : 'bg-slate-800 text-slate-200 border-slate-700'} p-4 rounded-2xl rounded-tl-none shadow-sm border text-sm leading-relaxed`;
+
+            messageDiv.innerText = content;
             
-            if (isPending) bubble.classList.add('animate-pulse');
-            bubble.innerText = text;
-
-            wrapper.appendChild(bubble);
+            wrapper.appendChild(messageDiv);
             chatDisplay.appendChild(wrapper);
+            
+            // Cuộn xuống cuối cùng
             chatDisplay.scrollTop = chatDisplay.scrollHeight;
-            return id;
         }
 
-        function updateMessage(id, text, isError = false) {
-            const el = document.getElementById(id);
-            if (el) {
-                el.innerText = text;
-                el.classList.remove('animate-pulse');
-                if (isError) el.classList.add('text-red-400', 'bg-red-900/20', 'border-red-900/50');
+        // Tự động điều chỉnh độ cao textarea
+        document.getElementById('user-input').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if (this.scrollHeight > 150) {
+                this.style.overflowY = 'scroll';
+                this.style.height = '150px';
+            } else {
+                this.style.overflowY = 'hidden';
             }
-            document.getElementById('chat-display').scrollTop = document.getElementById('chat-display').scrollHeight;
-        }
+        });
 
-        // Enter to send
-        document.getElementById('user-input').onkeydown = (e) => {
+        // Gửi bằng phím Enter (nhưng Shift+Enter để xuống dòng)
+        document.getElementById('user-input').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 handleSend();
             }
-        };
-
-        // Auto-expand textarea
-        document.getElementById('user-input').oninput = function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
-        };
+        });
     </script>
 </body>
 </html>
